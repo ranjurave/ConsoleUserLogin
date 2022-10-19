@@ -13,7 +13,7 @@ namespace ConsoleUser.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        public static User user = new User();
+        public static UserOld user = new UserOld();
         private readonly IConfiguration _configuration;
         public AuthController(IConfiguration configuration)
         {
@@ -21,7 +21,7 @@ namespace ConsoleUser.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<User>> Register(UserDto request)
+        public async Task<ActionResult<UserOld>> Register(UserDto request)
         {
             CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
             user.UserName = request.UserName;
@@ -47,7 +47,7 @@ namespace ConsoleUser.Controllers
             return Ok(token);
         }
 
-        private string CreateToken(User user)
+        private string CreateToken(UserOld user)
         {
             List<Claim> claims = new List<Claim>
             {
