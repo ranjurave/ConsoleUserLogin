@@ -70,6 +70,29 @@ namespace ConsoleUser.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("{id:guid}")]
+        public async Task<IActionResult> UserLogin([FromRoute] Guid id, LoginUserRequest loginUserRequest)
+        {
+            var user = await dbContext.Users.FindAsync(id);
+            if (user == null)
+            {
+                return BadRequest("Database empty");
+            }
+            if (user.Email != loginUserRequest.Email)
+            {
+                return NotFound("email not found");
+            }
+            if (user.Password == loginUserRequest.Password)
+            {
+                return Ok("login successfull");
+            }
+
+            //string token = CreateToken(user);
+            //return Ok(token);
+            return BadRequest("wrong password");
+        }
+
         [HttpDelete]
         [Route("{id:guid}")]
         public async Task<IActionResult> DeleteUser([FromRoute] Guid id)

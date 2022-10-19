@@ -9,8 +9,8 @@ using System.Security.Cryptography;
 
 namespace ConsoleUser.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
         public static UserOld user = new UserOld();
