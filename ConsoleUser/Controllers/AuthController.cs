@@ -1,90 +1,90 @@
-﻿using ConsoleUser.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.Diagnostics.Eventing.Reader;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Security.Cryptography;
+﻿//using ConsoleUser.Models;
+//using Microsoft.AspNetCore.Http;
+//using Microsoft.AspNetCore.Mvc;
+//using Microsoft.IdentityModel.Tokens;
+//using System.Diagnostics.Eventing.Reader;
+//using System.IdentityModel.Tokens.Jwt;
+//using System.Security.Claims;
+//using System.Security.Cryptography;
 
-namespace ConsoleUser.Controllers
-{
-    [ApiController]
-    [Route("api/[controller]")]
-    public class AuthController : ControllerBase
-    {
-        public static UserOld user = new UserOld();
-        private readonly IConfiguration _configuration;
-        public AuthController(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
+//namespace ConsoleUser.Controllers
+//{
+//    [ApiController]
+//    [Route("api/[controller]")]
+//    public class AuthController : ControllerBase
+//    {
+//        public static UserOld user = new UserOld();
+//        private readonly IConfiguration _configuration;
+//        public AuthController(IConfiguration configuration)
+//        {
+//            _configuration = configuration;
+//        }
 
-        [HttpPost("register")]
-        public async Task<ActionResult<UserOld>> Register(UserDto request)
-        {
-            CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
-            user.UserName = request.UserName;
-            user.PasswordHash = passwordHash;
-            user.PasswordSalt = passwordSalt;
+//        [HttpPost("register")]
+//        public async Task<ActionResult<UserOld>> Register(UserDto request)
+//        {
+//            CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
+//            user.UserName = request.UserName;
+//            user.PasswordHash = passwordHash;
+//            user.PasswordSalt = passwordSalt;
 
-            return Ok(user);
-        }
+//            return Ok(user);
+//        }
 
-        [HttpPost("login")]
-        public async Task<ActionResult<string>> Login(UserDto request)
-        {
-            if(user.UserName != request.UserName)
-            {
-                return BadRequest("User not found");
-            }
-            if(!VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
-            {
-                return BadRequest("Wrong password");
-            }
+//        [HttpPost("login")]
+//        public async Task<ActionResult<string>> Login(UserDto request)
+//        {
+//            if(user.UserName != request.UserName)
+//            {
+//                return BadRequest("User not found");
+//            }
+//            if(!VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
+//            {
+//                return BadRequest("Wrong password");
+//            }
 
-            string token = CreateToken(user);
-            return Ok(token);
-        }
+//            string token = CreateToken(user);
+//            return Ok(token);
+//        }
 
-        private string CreateToken(UserOld user)
-        {
-            List<Claim> claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, user.UserName)
-            };
+//        private string CreateToken(UserOld user)
+//        {
+//            List<Claim> claims = new List<Claim>
+//            {
+//                new Claim(ClaimTypes.Name, user.UserName)
+//            };
 
-            var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(
-                _configuration.GetSection("AppSettings:Token").Value));
+//            var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(
+//                _configuration.GetSection("AppSettings:Token").Value));
 
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+//            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
-            var token = new JwtSecurityToken(
-                claims: claims,
-                expires: DateTime.Now.AddSeconds(5),
-                signingCredentials: creds);
+//            var token = new JwtSecurityToken(
+//                claims: claims,
+//                expires: DateTime.Now.AddSeconds(5),
+//                signingCredentials: creds);
 
-            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+//            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
-            return jwt;
-        }
+//            return jwt;
+//        }
 
-        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
-        {
-            using(var hmac = new HMACSHA512())
-            {
-                passwordSalt = hmac.Key;
-                passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-            }
-        }
+//        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+//        {
+//            using(var hmac = new HMACSHA512())
+//            {
+//                passwordSalt = hmac.Key;
+//                passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+//            }
+//        }
 
-        private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
-        {
-            using(var hmac = new HMACSHA512(passwordSalt))
-            {
-                var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-                return computedHash.SequenceEqual(passwordHash);
-            }
-        }
-    }
-}
+//        private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
+//        {
+//            using(var hmac = new HMACSHA512(passwordSalt))
+//            {
+//                var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+//                return computedHash.SequenceEqual(passwordHash);
+//            }
+//        }
+//    }
+//}

@@ -1,5 +1,6 @@
 ﻿using ConsoleUser.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ConsoleUser.Data
 {

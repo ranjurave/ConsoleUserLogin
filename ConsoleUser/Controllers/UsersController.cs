@@ -1,7 +1,12 @@
 ﻿using ConsoleUser.Data;
 using ConsoleUser.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace ConsoleUser.Controllers
 {
@@ -10,10 +15,12 @@ namespace ConsoleUser.Controllers
     public class UsersController : Controller
     {
         private readonly UsersAPIDbContext dbContext;
+        private readonly IConfiguration _configuration;
 
-        public UsersController(UsersAPIDbContext dbContext)
+        public UsersController(UsersAPIDbContext dbContext, IConfiguration configuration)
         {
             this.dbContext = dbContext;
+            _configuration = configuration;
         }
 
         [HttpGet]
@@ -71,25 +78,20 @@ namespace ConsoleUser.Controllers
         }
 
         [HttpPost]
-        [Route("{id:guid}")]
-        public async Task<IActionResult> UserLogin([FromRoute] Guid id, LoginUserRequest loginUserRequest)
+        [Route("login/{email}")]
+        public async Task<IActionResult> UserLogin([FromRoute] string email, LoginUserRequest loginUserRequest)
         {
-            var user = await dbContext.Users.FindAsync(id);
+            var user = dbContext.Users.Where(e => e.Email == email).FirstOrDefault(); 
             if (user == null)
             {
-                return BadRequest("Database empty");
-            }
-            if (user.Email != loginUserRequest.Email)
-            {
-                return NotFound("email not found");
+                return BadRequest("email not found");
             }
             if (user.Password == loginUserRequest.Password)
             {
-                return Ok("login successfull");
+                string token = CreateToken(user);
+                return Ok(token);
             }
 
-            //string token = CreateToken(user);
-            //return Ok(token);
             return BadRequest("wrong password");
         }
 
@@ -101,10 +103,32 @@ namespace ConsoleUser.Controllers
             if (user != null)
             {
                 dbContext.Remove(user);
-                dbContext.SaveChangesAsync();
+                dbContext.SaveChanges();
                 return Ok("Contact deleted");
             }
             return NotFound();
+        }
+
+        private string CreateToken(User user)
+        {
+            List<Claim> claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.UserName)
+            };
+
+            var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(
+                _configuration.GetSection("AppSettings:Token").Value));
+
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.Now.AddHours(1),
+                signingCredentials: creds);
+
+            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+
+            return jwt;
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace ConsoleUser.Models
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace ConsoleUser.Models
 {
     public class AddUserRequest
     {
