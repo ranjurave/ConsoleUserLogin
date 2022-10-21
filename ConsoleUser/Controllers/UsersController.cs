@@ -32,6 +32,7 @@ namespace ConsoleUser.Controllers
         [HttpPost]
         public async Task<IActionResult> AddUser(AddUserRequest AddUserRequest)
         {
+
             var user = new User()
             {
                 Id = Guid.NewGuid(),
@@ -84,7 +85,7 @@ namespace ConsoleUser.Controllers
             var user = dbContext.Users.Where(e => e.Email == email).FirstOrDefault(); 
             if (user == null)
             {
-                return BadRequest("email not found");
+                return NotFound("email not found");
             }
             if (user.Password == loginUserRequest.Password)
             {
