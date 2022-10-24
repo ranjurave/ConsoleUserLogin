@@ -25,7 +25,7 @@ namespace ConsoleUser.Controllers
         }
 
         [HttpGet]
-        [Authorize]
+        //[Authorize]
         public async Task<IActionResult> GetUsers()
         {
             return Ok(await dbContext.Users.ToListAsync());
