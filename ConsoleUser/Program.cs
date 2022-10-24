@@ -29,7 +29,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<UsersAPIDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("UsersAPIConnectionString")));
 
 builder.Services.AddScoped<ITokenHandler, ConsoleUser.Repositories.TokenHandler>();
-builder.Services.AddSingleton<IUserRepository, StaticUserRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
