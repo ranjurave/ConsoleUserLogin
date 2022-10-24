@@ -1,5 +1,9 @@
 using ConsoleUser.Data;
+using ConsoleUser.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,8 +14,36 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+var provider = builder.Services.BuildServiceProvider();
+var confuguration = provider.GetRequiredService<IConfiguration>();
+builder.Services.AddCors(options =>
+{
+    var frontendURL = confuguration.GetValue<string>("frontend_url");
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.WithOrigins(frontendURL).AllowAnyMethod().AllowAnyHeader();
+    });
+});
+
 //builder.Services.AddDbContext<UsersAPIDbContext>(options => options.UseInMemoryDatabase("ConsoleUsersDb"));
 builder.Services.AddDbContext<UsersAPIDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("UsersAPIConnectionString")));
+
+builder.Services.AddScoped<ITokenHandler, ConsoleUser.Repositories.TokenHandler>();
+builder.Services.AddSingleton<IUserRepository, StaticUserRepository>();
+
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+    });
 
 var app = builder.Build();
 
@@ -24,6 +56,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors();
+
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

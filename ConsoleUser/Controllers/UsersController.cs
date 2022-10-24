@@ -1,5 +1,6 @@
 ﻿using ConsoleUser.Data;
 using ConsoleUser.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,7 @@ namespace ConsoleUser.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetUsers()
         {
             return Ok(await dbContext.Users.ToListAsync());
@@ -78,23 +80,23 @@ namespace ConsoleUser.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("login/{email}")]
-        public async Task<IActionResult> UserLogin([FromRoute] string email, LoginUserRequest loginUserRequest)
-        {
-            var user = dbContext.Users.Where(e => e.Email == email).FirstOrDefault(); 
-            if (user == null)
-            {
-                return NotFound("email not found");
-            }
-            if (user.Password == loginUserRequest.Password)
-            {
-                string token = CreateToken(user);
-                return Ok(token);
-            }
+        //[HttpPost]
+        //[Route("login/{email}")]
+        //public async Task<IActionResult> UserLogin([FromRoute] string email, LoginUserRequest loginUserRequest)
+        //{
+        //    var user = dbContext.Users.Where(e => e.Email == email).FirstOrDefault(); 
+        //    if (user == null)
+        //    {
+        //        return NotFound("email not found");
+        //    }
+        //    if (user.Password == loginUserRequest.Password)
+        //    {
+        //        string token = CreateToken(user);
+        //        return Ok(token);
+        //    }
 
-            return BadRequest("wrong password");
-        }
+        //    return BadRequest("wrong password");
+        //}
 
         [HttpDelete]
         [Route("{id:guid}")]
